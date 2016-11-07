@@ -1,6 +1,6 @@
 <?php
 /**
- * GDelt example: running the GDelt sample query
+ * GDELT example: running the GDELT sample query
  *
  * @author Patrick van Bergen
  */
@@ -12,6 +12,7 @@ ini_set('display_errors', 1);
 
 // setup Composer autoloading
 require_once __DIR__ . '/../vendor/autoload.php';
+
 require_once __DIR__ . '/constants.php';
 
 $sql = "SELECT theme, COUNT(*) as count

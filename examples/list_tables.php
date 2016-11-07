@@ -1,6 +1,6 @@
 <?php
 /**
- * GDelt example: list the datasets of project 'gdelt-bq'
+ * GDELT example: list the datasets of project 'gdelt-bq'
  *
  * @author Patrick van Bergen
  */
@@ -14,9 +14,11 @@ ini_set('display_errors', 1);
 // setup Composer autoloading
 require_once __DIR__ . '/../vendor/autoload.php';
 
+require_once __DIR__ . '/constants.php';
+
 $bigQuery = new BigQueryClient([
     // replace this path with a path to your Google Cloud account key
-    'keyFilePath' => __DIR__ . '/../GDelt example-1032d7c1cbf3.json',
+    'keyFilePath' => Constants::ACCOUNT_KEY_FILE,
     'projectId' => 'gdelt-bq'
 ]);
 
