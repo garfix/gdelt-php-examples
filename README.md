@@ -12,5 +12,6 @@ Install it with
 
 ## Google Cloud accound key file
 
-Whenever you see "GDELT example-59bcb4241a57.json" in code (Constants::ACCOUNT_KEY_FILE), replace this with your own Google Cloud account JSON key.
-You can obtain one by creating an account at https://console.cloud.google.com/
+Replace the Google Cloud account key file in the code (Constants::ACCOUNT_KEY_FILE) with your own key.
+You can obtain one by creating an account at https://console.cloud.google.com/ Make sure you link and active billing account.
+
