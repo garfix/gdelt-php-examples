@@ -17,18 +17,13 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 require_once __DIR__ . '/constants.php';
 
-// We need to use a cache for the query results; this is a simple technique to create a 1-day cache
-$cachedResultsFile = sys_get_temp_dir() . "/" . date('Y-m-d') . '.json';
+$from = (new DateTimeImmutable("5 days ago"))->format("Ymd");
+$to = (new DateTimeImmutable("now"))->format("Ymd");
 
-if (!file_exists($cachedResultsFile)) {
-
-    $from = (new DateTimeImmutable("5 days ago"))->format("Ymd");
-    $to = (new DateTimeImmutable("now"))->format("Ymd");
-
-    // select the location of all events with codes indicating aggression
-    // reported in the last 3 days
-    $sql = "
-        SELECT AVG(ActionGeo_Lat) as lat, AVG(ActionGeo_Long) as lng, COUNT(*) as count, MAX(SOURCEURL) as source
+// select the location of all events with codes indicating aggression
+// reported in the last 3 days
+$sql = "
+        SELECT MAX(ActionGeo_Lat) as lat, MAX(ActionGeo_Long) as lng, COUNT(*) as count, MAX(SOURCEURL) as source, GROUP_CONCAT(UNIQUE(EventCode)) as codes
         FROM [gdelt-bq:gdeltv2.events] 
         WHERE SqlDate > {$from} AND SqlDate < {$to}
         AND EventCode in ('190', '191','192', '193', '194', '195', '1951', '1952', '196')
@@ -36,6 +31,11 @@ if (!file_exists($cachedResultsFile)) {
         AND ActionGeo_Lat IS NOT NULL AND ActionGeo_Long IS NOT NULL
         GROUP BY ActionGeo_Lat, ActionGeo_Long            
     ";
+
+// We need to use a cache for the query results; this is a simple technique to create a 1-day cache specific for the query
+$cachedResultsFile = sys_get_temp_dir() . "/" . md5($sql) . '-' . date('Y-m-d') . '.json';
+
+if (!file_exists($cachedResultsFile)) {
 
     $bigQuery = new BigQueryClient([
         // replace this path with a path to your Google Cloud account key
@@ -55,6 +55,7 @@ if (!file_exists($cachedResultsFile)) {
             'lng' => $row['lng'],
             'count' => $row['count'],
             'source' => $row['source'],
+            'codes' => $row['codes'],
         );
     }
 
@@ -70,8 +71,6 @@ if (!file_exists($cachedResultsFile)) {
 }
 
 $mapsApiKey = Constants::MAPS_API_KEY;
-
-//echo $testDataJson;exit;
 
 ?>
 <html>
@@ -106,14 +105,14 @@ $mapsApiKey = Constants::MAPS_API_KEY;
             heatmap = new HeatmapOverlay(map,
                 {
                     // radius should be small ONLY if scaleRadius is true (or small radius is intended)
-                    "radius": 2,
-                    "maxOpacity": 1,
+                    "radius": 0.7,
+                    "maxOpacity": 0.7,
                     // scales the radius based on map zoom
                     "scaleRadius": true,
                     // if set to false the heatmap uses the global maximum for colorization
                     // if activated: uses the data maximum within the current map boundaries
                     //   (there will always be a red spot with useLocalExtremas true)
-                    "useLocalExtrema": true,
+                    "useLocalExtrema": false,
                     // which field name in your data represents the latitude - default "lat"
                     latField: 'lat',
                     // which field name in your data represents the longitude - default "lng"
@@ -131,7 +130,7 @@ $mapsApiKey = Constants::MAPS_API_KEY;
                 var marker = new google.maps.Marker({
                     position: new google.maps.LatLng(row['lat'], row['lng']),
                     url: row['source'],
-                    title: '[' + row['count'] + 'x] ' + row['source'],
+                    title: row['source'] + "\n\n" + 'occurs: ' + row['count'] + 'x' + "\n" + 'codes: ' + row['codes'],
                     map: map,
                     visible: false
                 });
