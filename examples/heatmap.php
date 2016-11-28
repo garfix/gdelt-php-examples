@@ -1,6 +1,6 @@
 <?php
 /**
- * This example shows all "current" violent activities in the world, as reported by GDELT.
+ * This example shows all "current" fights in the world, as reported by GDELT.
  *
  * example code from https://www.patrick-wied.at/static/heatmapjs/example-heatmap-googlemaps.html
  *
